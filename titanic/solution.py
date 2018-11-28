@@ -1,7 +1,7 @@
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier as rfc
+from sklearn.ensemble import *
 from sklearn.metrics import r2_score, accuracy_score
-from sklearn.model_selection import cross_val_score, RandomizedSearchCV
+from sklearn.model_selection import *
 
 training_data = pd.read_csv('data/train.csv')
 
@@ -23,9 +23,10 @@ def make_normalized_inputs(df):
 		std = X[c].std()
 		X[c] = X[c] / std
 		mean = X[c].mean()
-		X[c] = X[c].fillna(-1)
+		X[c] = X[c].fillna(mean)
 
 	X['sex'] = (ndf['Sex'] == 'male').astype(int)
+	X['Pclass'] = ndf['Pclass']
 
 	return X
 
@@ -34,23 +35,27 @@ Ytrain = make_Y(training_data)
 
 Xtest = make_normalized_inputs(test_data)
 
-model = rfc(n_estimators=10, max_depth=5)
-
-r = 0.8
-m=int(r*len(Xtrain))
+model = GradientBoostingClassifier(n_estimators=10, max_depth=5, max_features='auto')
 
 
 params = {
-	'max_depth': range(1, 20),
-	'n_estimators': range(1, 400)
+	'max_depth': [x for x in range(1, 10)],
+	'n_estimators': [x for x in range(1, 100)],
+	'min_samples_leaf': [x for x in range(1, 40)],
+	'max_features': ['auto', 'sqrt', 0.5]
 }
+
 iterations = 20
 random_search = RandomizedSearchCV(model,
 	param_distributions=params, n_iter=iterations,
-	verbose=2, n_jobs=-1)
+	verbose=2, n_jobs=-1, scoring='accuracy')
+
+# grid_search = GridSearchCV(model, params,
+# verbose=2, n_jobs=-1, scoring='accuracy')
+# grid_search.fit(Xtrain, Ytrain)
+# best_model = grid_search.best_estimator_
 
 random_search.fit(Xtrain, Ytrain)
-
 best_model = random_search.best_estimator_
 
 
@@ -59,6 +64,9 @@ print(sum(cvs) / len(cvs))
 
 
 predictions = pd.DataFrame(best_model.predict(Xtest))
-predictions['PassengerId'] = Xtest.index
-predictions.columns = ['PassengerId', 'Survived']
+predictions.columns = ['Survived']
+predictions.index = test_data['PassengerId']
+
+predictions.to_csv('predictions.csv', index_label='PassengerId')
+
 
