@@ -54,7 +54,7 @@ random_search.fit(Xtrain, Ytrain)
 best_model = random_search.best_estimator_
 
 
-cvs = cross_val_score(model, Xtrain, Ytrain, scoring='accuracy')
+cvs = cross_val_score(best_model, Xtrain, Ytrain, scoring='accuracy')
 print(sum(cvs) / len(cvs))
 
 
