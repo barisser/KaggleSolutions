@@ -7,10 +7,12 @@ training_data = pd.read_csv('data/train.csv')
 
 test_data = pd.read_csv('data/test.csv')
 
+
 def make_Y(df):
 	Y = pd.DataFrame(df['Survived'])
 	Y.index = df.index
 	return Y
+
 
 def make_normalized_inputs(df):
 	"""
