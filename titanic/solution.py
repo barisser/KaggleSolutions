@@ -68,5 +68,3 @@ predictions.columns = ['Survived']
 predictions.index = test_data['PassengerId']
 
 predictions.to_csv('predictions.csv', index_label='PassengerId')
-
-
